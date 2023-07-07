@@ -1,0 +1,12 @@
+{
+    "backpiclist":["assent/bd.png","assent/bd2.png","assent/bd3.png"],
+    "fontpath":"assent/LXGWWenKaiUI-Regular.ttf",
+    "ptext":"欢迎使用",
+    "dbpath":"/home/yu/下载/ipdata.db",
+    "token":"dog",
+    "redis":"redis://127.0.0.1:6379/4",
+    "maxnum":5000,
+    "iplim":200,
+    "address":"127.0.0.1",
+    "port":8080
+}
