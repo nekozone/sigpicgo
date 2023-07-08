@@ -13,6 +13,7 @@ import (
 	"sigpicgo/fakegeo"
 	"sigpicgo/global"
 	"sigpicgo/pic"
+	"syscall"
 
 	"time"
 
@@ -25,6 +26,7 @@ import (
 type Config struct {
 	Backpiclist []string `json:"backpiclist"`
 	Ptext       string   `json:"ptext"`
+	Etext       string   `json:"etext"`
 	Fontpath    string   `json:"fontpath"`
 	Token       string   `json:"token"`
 	Dbpath      string   `json:"dbpath"`
@@ -80,12 +82,14 @@ func init() {
 }
 
 func main() {
+	os.Remove("/tmp/sigpicgo.sock")
+	syscall.Umask(0)
 	rc, err := redis.ParseURL(config.Redis)
 	if err != nil {
 		panic(err)
 	}
 	rcl := redis.NewClient(rc)
-	fmt.Println(config.Dbpath)
+	// fmt.Println(config.Dbpath)
 	db, err := sql.Open("sqlite3", config.Dbpath)
 	if err != nil {
 		panic(err)
@@ -188,12 +192,12 @@ func main() {
 		usinfo := pic.Getua(ua)
 		res := cip.GetIp_c(rcl, db, q)
 		refer := c.Request.Referer()
-		number := rcl.Incr(ctx, "ddog").Val()
+		number := rcl.Incr(ctx, "dogg").Val()
 		ntime := time.Now().Format("2006-01-02 15:04:05")
 		if refer == "" {
 			refer = "neko.red"
 		}
-		text := [6]string{"忽有狂徒夜磨刀，帝星飘摇荧惑高。", fmt.Sprintf("IP地址: %s  %s", q, res["location"]), refer, usinfo, fmt.Sprintf("No. %d  %s", number, ntime), "@dogcraft neko.red"}
+		text := [6]string{config.Ptext, fmt.Sprintf("IP地址: %s %s %s", q, res["address"], res["location"]), refer, usinfo, fmt.Sprintf("No. %d  %s", number, ntime), config.Etext}
 		rawpic := pic.Genpic(text)
 		c.Data(http.StatusOK, "image/jpeg", rawpic)
 	})
@@ -206,7 +210,17 @@ func main() {
 		c.Redirect(http.StatusFound, picurl)
 	})
 
+	r.GET("/r2/", func(c *gin.Context) {
+		picurl := rcl.SRandMember(ctx, "piclist").Val()
+		if picurl == "" {
+			picurl = "https://neko.red/img.jpg"
+		}
+		c.Redirect(http.StatusFound, picurl)
+	})
+
 	// r.Run(fmt.Sprint(config.Address) + ":" + fmt.Sprint(config.Port))
-	r.Run(":8080")
+	// r.Run("127.0.0.1:3323")
+	r.TrustedPlatform = "X-Client-IP"
+	r.RunUnix("/tmp/sigpicgo.sock")
 
 }
