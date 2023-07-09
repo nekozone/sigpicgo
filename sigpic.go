@@ -82,7 +82,7 @@ func init() {
 }
 
 func main() {
-	os.Remove("/tmp/sigpicgo.sock")
+	os.Remove("sigpicgo.sock")
 	syscall.Umask(0)
 	rc, err := redis.ParseURL(config.Redis)
 	if err != nil {
@@ -221,6 +221,6 @@ func main() {
 	// r.Run(fmt.Sprint(config.Address) + ":" + fmt.Sprint(config.Port))
 	// r.Run("127.0.0.1:3323")
 	r.TrustedPlatform = "X-Client-IP"
-	r.RunUnix("/tmp/sigpicgo.sock")
+	r.RunUnix("sigpicgo.sock")
 
 }
